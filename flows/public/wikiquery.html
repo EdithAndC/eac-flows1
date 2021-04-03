@@ -1,0 +1,70 @@
+<html>
+<meta charset="UTF-8">
+
+<head>
+  <title>Wikidata query</title>
+  <script src="https://unpkg.com/vue"></script>
+  <script src="https://unpkg.com/marked@0.3.6"></script>
+  <script src="https://unpkg.com/lodash@4.16.0"></script>
+  <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+  <link rel="stylesheet" type="text/css" href="style.css" />
+</head>
+
+<body>
+  <div id="app">
+    <div id="controls">
+      <textarea :value="query" @input="query"></textarea>
+      <table>
+        <tr>
+          <th>variable</th>
+          <th>value</th>
+        </tr>
+        <tr>
+          <td>endpoint</td>
+          <td>{{ endpoint }}</td>
+        </tr>
+        <tr>
+          <td>query</td>
+          <td>{{ query }}</td>
+        </tr>
+      </table>
+      <button v-on:click="run()">Run</button>
+    </div>
+
+    <ul v-for="item in results">
+      <li>{{item.itemLabel.value}}</li>
+  </div>
+  </div>
+
+  <script>
+    new Vue({
+      el: '#app',
+      data() {
+        return {
+          results: null,
+          endpoint: 'https://query.wikidata.org/sparql',
+          query: `SELECT ?item ?itemLabel 
+WHERE 
+{
+?item wdt:P31 wd:Q2934.
+SERVICE wikibase:label { bd:serviceParam wikibase:language "[AUTO_LANGUAGE],en". }
+}
+`
+        }
+      },
+
+      methods: {
+        run : function() {
+          const fullUrl = this.endpoint + '?query=' + encodeURIComponent(this.query);
+        axios
+          .get(fullUrl)
+          .then(response => (this.results = response.data.results.bindings))
+          .catch(error => console.log(error))
+        }
+      }
+    })
+  </script>
+
+</body>
+
+</html>
